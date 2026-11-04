@@ -1,0 +1,25 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+env/
+
+# ---- Настройки сервера (личные данные принтера!) ----
+server/config.json
+
+# ---- Логи и временные файлы ----
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# ---- IDE ----
+.vscode/
+.idea/
+*.swp
+
+# ---- Архивы ----
+*.zip
+*.rar
