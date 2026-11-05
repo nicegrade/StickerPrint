@@ -6,6 +6,11 @@ __pycache__/
 venv/
 env/
 
+# PyInstaller
+server/build/
+server/dist/
+server/*.spec
+
 # ---- Настройки сервера (личные данные принтера!) ----
 server/config.json
 

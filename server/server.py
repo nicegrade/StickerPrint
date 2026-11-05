@@ -4,6 +4,7 @@
 # ================================================================
 
 import os
+import sys
 import json
 import threading
 import webbrowser
@@ -32,6 +33,21 @@ DEFAULT_CONFIG = {
 CONFIG_FILE = "config.json"   # Файл для сохранения настроек
 PORT = 3000                   # Порт сервера
 HOST = "0.0.0.0"              # Слушаем все интерфейсы
+
+
+# ================================================================
+# РЕСУРСЫ (иконка и т.п.) — работают и в .exe (--onefile)
+# ================================================================
+
+def get_resource_path(relative_path):
+    """
+    Возвращает правильный путь к ресурсу.
+    - При обычном запуске (python server.py) — путь относительно текущей папки.
+    - В скомпилированном .exe (--onefile) — путь во временной папке sys._MEIPASS.
+    """
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.abspath("."), relative_path)
 
 
 # ================================================================
@@ -510,13 +526,13 @@ def print_cell_number():
 
 def create_tray_icon():
     """Создаёт иконку в системном трее с меню."""
-    # Ищем файл иконки
+    # Ищем файл иконки через get_resource_path (работает и в .exe)
     icon_path = None
     for ext in ['.ico', '.png']:
         for name in ['icon', 'printer', 'label']:
-            test_path = name + ext
+            test_path = get_resource_path(name + ext)
             if os.path.exists(test_path):
-                icon_path = os.path.abspath(test_path)
+                icon_path = test_path
                 break
         if icon_path:
             break
