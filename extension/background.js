@@ -19,8 +19,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   switch (message.action) {
     case "printCell":
-      // Автопечать при сканировании ячейки на странице (без изменений)
-      handleAutoPrint(message.cellNumber);
+      // Автопечать при сканировании ячейки на странице.
+      // allowDuplicate=true  -> печатаем всегда (полки: TransferByBarcodeArticle,
+      //                         TransferPackingArticle)
+      // allowDuplicate=false -> подавляем повтор подряд (Movement/put/v2)
+      handleAutoPrint(message.cellNumber, !!message.allowDuplicate);
       return; // ответ не требуется
 
     case "startRangePrint":
@@ -57,11 +60,32 @@ chrome.alarms.onAlarm.addListener((alarm) => {
 
 // ============================================================
 // Автопечать по сигналу со страницы (сканирование ячейки)
+//
+// allowDuplicate=false -> подавляем повтор подряд (lastPrintedCell)
+// allowDuplicate=true  -> печатаем всегда, даже если номер совпадает
 // ============================================================
-function handleAutoPrint(cell) {
+function handleAutoPrint(cell, allowDuplicate) {
   if (!cell) return;
 
-  // Защита от дублирования: не печатаем одну ячейку дважды подряд
+  if (allowDuplicate) {
+    // Без дедупликации: печатаем всё подряд
+    fetch(PRINT_SERVER, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cellNumber: cell })
+    })
+      .then(response => response.json())
+      .then(() => {
+        chrome.storage.local.set({
+          lastPrintedCell: cell,
+          lastPrintTime: new Date().toLocaleTimeString()
+        });
+      })
+      .catch(() => {}); // Игнорируем ошибки, они обрабатываются в popup
+    return;
+  }
+
+  // С дедупликацией: не печатаем одну ячейку дважды подряд
   chrome.storage.local.get(["lastPrintedCell"], (result) => {
     if (result.lastPrintedCell === cell) return;
 

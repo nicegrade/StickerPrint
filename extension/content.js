@@ -13,7 +13,8 @@ window.addEventListener("message", (event) => {
   if (event.data.type === "PRINT_CELL") {
     chrome.runtime.sendMessage({
       action: "printCell",
-      cellNumber: event.data.cellNumber
+      cellNumber: event.data.cellNumber,
+      allowDuplicate: !!event.data.allowDuplicate
     });
   }
 });
